@@ -1,41 +1,99 @@
 /**
  * Created by Amarjot8 on 05-Apr-17.
  */
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
 
 class REsearch
 {
+  static LinkedList<FSMState> all_states = new LinkedList<>();
+  static Deque<FSMState> deque = new LinkedList<>();
+
   public static void main ( String[] args )
   {
-    Deque deque = new LinkedList<FSMState>();
-    deque.add( new FSMState( -1, '\u0000' ) );
+    buildFSM();
+    try
+    {
+      BufferedReader in = new BufferedReader( new FileReader( args[0] ));
+      String line, s;
+      while ( ( line = in.readLine() ) != null )
+      {
+        s = line;
+        while ( s.length() > 0)
+        {
+          if ( search(s) ) System.out.println( line );
+          else s = s.substring(1);
+        }
+      }
+
+    }
+    catch ( Exception e )
+    {
+
+    }
+  }
+
+
+  static boolean search( String line )
+  {
+    FSMState current;
+    while ( line.length() > 0 )
+    {
+      current = deque.removeFirst();
+      if ( current.getId() == -1 )
+      {
+        if ( deque.isEmpty() )
+        {
+          return false;
+        }
+        else deque.addLast( current );
+      }
+      //branching symbol. tbd
+      else if ( current.getPattern() ==  '\u0000' )
+      {
+        for ( int n : current.getNext() )
+        {
+          deque.addFirst( all_states.get(n) );
+        }
+      }
+      else if ( current.getPattern() == line.charAt( 0 ) )
+      {
+        current = all_states.get( current.getNext()[0] );
+        if ( current.getNext()[0] == 0 ) return true;
+        deque.addLast( current );
+        line = line.substring(1);
+      }
+      else return false;
+    }
+    return false;
+  }
+
+  static void buildFSM()
+  {
+    deque.addLast( new FSMState( -1, '\u0000', new int[] { -1, -1 } ) );
     Scanner s = new Scanner( System.in );
+    //read in state machine
     while ( s.hasNextLine() )
     {
       try
       {
-        //the state number
-        int state = s.nextInt();
         //input symbol for state
-        char symbol = s.next().charAt( 0 );
-        for ( FSMState fsm_state : deque )
-        {
-          if ( fsm_state.state() == state )
-            fsm_state.setPattern( symbol );
-        }
-        //possible next states
-        int nxt_1 = s.nextInt();
-        int nxt_2 = s.nextInt();
+        int id = s.nextInt();
+        String symbol = s.next();
+        if ( symbol.length() != 1 ) throw new Exception();
+        int[] nxt = new int[] { s.nextInt(), s.nextInt() };
+        all_states.add( id, new FSMState( id, symbol.charAt(0), nxt ) );
       }
       catch ( Exception e )
       {
         System.err.println( "Invalid Input: " + s.next() );
       }
     }
+    FSMState initial = all_states.getFirst();
+    deque.addFirst( initial );
   }
 }
 
@@ -43,26 +101,25 @@ class FSMState
 {
   private int id;
   private char pattern;
-  FSMState( int id, char pattern )
+  private int[] next;
+  FSMState( int id, char pattern, int[] nxt )
   {
     this.id = id;
     this.pattern = pattern;
+    next = nxt;
   }
-  FSMState( int id )
-  {
-    this.id = id;
-  }
-  void setPattern(char pattern) throws Exception
-  {
-    if ( this.pattern == '\u0000' ) this.pattern = pattern;
-    else throw new Exception();
-  }
-  int state()
+  int getId()
   {
     return id;
   }
-  char match()
+
+  char getPattern()
   {
     return pattern;
+  }
+
+  int[] getNext()
+  {
+    return next;
   }
 }
