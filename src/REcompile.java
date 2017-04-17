@@ -22,8 +22,11 @@ public class REcompile
         int initial;
 
         initial=expression();
-        if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
+        System.out.println("ENDING ");
+
+        //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
         set_state(state,' ',0,0);
+        printArrays();
     }
 
     private static int expression()
@@ -32,7 +35,9 @@ public class REcompile
         int r;
 
         r=term();
-        if(isvocab(p[j])||p[j].equals("[")) expression();
+        if(j <= p.length-1) {
+            if (isvocab(p[j]) || p[j].equals("[")) expression();
+        }
         return(r);
     }
 
@@ -41,26 +46,32 @@ public class REcompile
         System.err.println("term "+ p[j]+ " isvocab : " +   isvocab(p[j]));
 
         int r, t1,t2,f;
-        
+
         f=state-1; r=t1=factor();
-        printArrays();
-        System.out.println(j);
-        if(p[j].equals("*"))
+       // printArrays();
+        System.out.println(p.length);
+        if(j <= p.length-1)
         {
-            set_state(state,' ',state+1,t1);
-            j++; r=state; state++;
-        }
-        if(p[j].equals("+")){
-            if(next1[f]==next2[f])
-                next2[f]=state;
-            next1[f]=state;
-            f=state-1;
-            j++;r=state;state++;
-            t2=term();
-            set_state(r,' ',t1,t2);
-            if(next1[f]==next2[f])
-                next2[f]=state;
-            next1[f]=state;
+            if (p[j].equals("*")) {
+                set_state(state, ' ', state + 1, t1);
+                j++;
+                r = state;
+                state++;
+            }
+            if (p[j].equals("+")) {
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                f = state - 1;
+                j++;
+                r = state;
+                state++;
+                t2 = term();
+                set_state(r, ' ', t1, t2);
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+            }
         }
         return(r);
     }
