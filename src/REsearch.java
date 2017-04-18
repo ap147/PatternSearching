@@ -36,7 +36,6 @@ class REsearch
     }
   }
 
-
   static boolean search( String line )
   {
     FSMState current;
@@ -123,3 +122,75 @@ class FSMState
     return next;
   }
 }
+
+class MyDeque<E>
+{
+  DequeNode<E> first;
+  DequeNode<E> last;
+
+  MyDeque()
+  {
+  }
+
+  void addFirst(E data)
+  {
+    DequeNode d = new DequeNode(data);
+    if( first != null )
+    {
+      d.next = first;
+      first = d;
+    }
+    else
+    {
+      first = d;
+      last = d;
+    }
+  }
+
+  E getFirst()
+  {
+    DequeNode d = first;
+    first = first.next;
+    return d.getData();
+  }
+
+  void addLast(E data)
+  {
+    DequeNode d = new DequeNode(data);
+    if( last != null )
+    {
+      d.prev = last;
+      last = d;
+    }
+    else
+    {
+      first = d;
+      last = d;
+    }
+  }
+
+  E getLast()
+  {
+    DequeNode d = last;
+    last = last.prev;
+    return d.getData();
+  }
+
+  private class DequeNode
+  {
+    DequeNode prev;
+    DequeNode next;
+    private E data;
+
+    DequeNode(E data)
+    {
+      this.data = data;
+    }
+    E getData()
+    {
+      return data;
+    }
+
+  }
+}
+
