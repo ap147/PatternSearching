@@ -1,18 +1,38 @@
 //Amarjot Parmar (1255668)
 //http://stackoverflow.com/questions/4047808/what-is-the-best-way-to-tell-if-a-character-is-a-letter-or-number-in-java-withou
 
+/*
+
+    any symbol that does not have a special meaning (as given below) is a literal that matches itself
+    . is a wildcard symbol that matches any literal
+    adjacent regexps are concatenated to form a single regexp
+    * indicates closure (zero or more occurrences) on the preceding regexp
+    ? indicates that the preceding regexp can occur zero or one time
+    | is an infix alternation operator such that if r and e are regexps, then r|e is a regexp that matches one of either r or e
+    ( and ) may enclose a regexp to raise its precedence in the usual manner; such that if e is a regexp, then (e) is a regexp and is equivalent to e. e cannot be empty.
+    [ and ] may enclose a list of literals and matches one and only one of the enclosed literals. Any special symbols in the list lose their special meaning, except ] which must appear first in the list if it is a literal. The enclosed list cannot be empty.
+    \ is an escape character that matches nothing but indicates the symbol immediately following the backslash loses any special meaning and is to be interpretted as a literal symbol
+    operator precedence is as follows (from high to low):
+        escaped characters (i.e. symbols preceded by \)
+        parentheses (i.e. the most deeply nested regexps have the highest precedence)
+        list of alternative literals (i.e. [ and ])
+        repetition operators (i.e. * and ?)
+        concatenation
+        alternation (i.e. |)
+
+ */
 public class REcompile
 {   static Character ch [] = new Character[20];
     static Integer next1 [] = new Integer[20];
     static Integer next2 [] = new Integer[20];
     static Integer state=0;
-    static String [] p;
-    static int j = 0;
+    static String [] regex;
+    static int index = 0;
 
     public static void main(String[] args)
     {
         System.err.println("Expersion : " + args[0]);
-        p = args[0].split("");
+        regex = args[0].split("");
         parse();
         // System.out.println(isvocab(p[0]));
     }
@@ -21,7 +41,7 @@ public class REcompile
         System.out.println("par");
         int initial;
 
-        initial=expression();
+        initial=expression();// <-
         System.out.println("ENDING ");
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
@@ -31,39 +51,41 @@ public class REcompile
 
     private static int expression()
     {
-        System.err.println("exp " +p[j]+ " isvocab : " +   isvocab(p[j]));
+        System.err.println("exp " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
         int r;
 
         r=term();
-        if(j <= p.length-1) {
-            if (isvocab(p[j]) || p[j].equals("[")) expression();
+        if(index <= regex.length-1) {
+            if (isvocab(regex[index]) || regex[index].equals("[")) expression();
         }
         return(r);
     }
 
     private static int term()
     {
-        System.err.println("term "+ p[j]+ " isvocab : " +   isvocab(p[j]));
+        System.err.println("term "+ regex[index]+ " isvocab : " +   isvocab(regex[index]));
 
         int r, t1,t2,f;
 
         f=state-1; r=t1=factor();
        // printArrays();
-        System.out.println(p.length);
-        if(j <= p.length-1)
+        System.out.println(regex.length);
+        if(index <= regex.length-1)
         {
-            if (p[j].equals("*")) {
+            if (regex[index].equals("*"))
+            {
                 set_state(state, ' ', state + 1, t1);
-                j++;
+                index++;
                 r = state;
                 state++;
             }
-            if (p[j].equals("+")) {
+            if (regex[index].equals("+"))
+            {
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
                 f = state - 1;
-                j++;
+                index++;
                 r = state;
                 state++;
                 t2 = term();
@@ -72,28 +94,49 @@ public class REcompile
                     next2[f] = state;
                 next1[f] = state;
             }
+            if (regex[index].equals("?"))
+            {
+                int prevState = state-1;
+                //5
+                set_state(state, ch[prevState], next1[prevState]+2, next2[prevState]+2);
+                //4
+                next2[prevState] = state;
+                ch[prevState] = ' ';
+
+                state++;
+                //7
+                set_state(state, ' ', state+1, state+1);
+
+                next1[prevState] = state;
+
+                index++;
+                r = state;
+                state++;
+            }
         }
         return(r);
     }
 
     private static int factor()
     {
-        System.err.println("factor : " +p[j]+ " isvocab : " +   isvocab(p[j]));
+        System.err.println("factor : " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
 
         int r =0;
 
-        if(isvocab(p[j]))
+        if(isvocab(regex[index]))
         {
-            char x = p[j].charAt(0);
-            set_state(state,x,state+1,state+1);
-            j++;r=state; state++;
+            char x = regex[index].charAt(0);
+            set_state(state, x, state + 1, state + 1);
+            index++;
+            r = state;
+            state++;
         }
         else
-        if(p[j].equals("["))
+        if(regex[index].equals("["))
         {
-            j++; r=expression();
-            if(p[j].equals("]"))
-                j++;
+            index++; r=expression();// <-
+            if(regex[index].equals("]"))
+                index++;
             else
                 error();
         }
@@ -119,11 +162,15 @@ public class REcompile
     private static void print()
     {
         System.out.println();
-        for(int x = j; x < p.length; x++)
+        for(int x = index; x < regex.length; x++)
         {
-            System.out.print(p[x]);
+            System.out.print(regex[x]);
         }
         System.out.println();
+    }
+    private static void pintState(int s)
+    {
+        System.out.println( s +" | " +ch[s] + " " + next1[s] + " " + next2[s]);
     }
     private static void printArrays()
     {
