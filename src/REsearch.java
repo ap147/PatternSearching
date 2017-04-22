@@ -3,18 +3,18 @@
  */
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Scanner;
 
 class REsearch
 {
   static LinkedList<FSMState> all_states = new LinkedList<>();
-  static Deque<FSMState> deque = new LinkedList<>();
+  static MyDeque<FSMState> deque = new MyDeque<>();
 
   public static void main ( String[] args )
   {
     buildFSM();
+    printStates();
     try
     {
       BufferedReader in = new BufferedReader( new FileReader( args[0] ));
@@ -94,6 +94,22 @@ class REsearch
     FSMState initial = all_states.getFirst();
     deque.addFirst( initial );
   }
+
+  static void printStates()
+  {
+    int[] next;
+    for ( FSMState s : all_states )
+    {
+      System.out.print(s.getId() + " " + s.getPattern());
+      next = s.getNext();
+      for ( int i : next)
+      {
+        System.out.print(" " + Integer.toString( i ) );
+      }
+      System.out.println();
+    }
+  }
+
 }
 
 class FSMState
@@ -125,17 +141,31 @@ class FSMState
 
 class MyDeque<E>
 {
-  DequeNode<E> first;
-  DequeNode<E> last;
+  private DequeNode first;
+  private DequeNode last;
 
   MyDeque()
   {
   }
 
+  boolean isEmpty()
+  {
+    return ( first == null && last == null );
+  }
+
+  int length()
+  {
+    if ( isEmpty() )
+    {
+      return 0;
+    }
+    return first.countNodes( 0 );
+  }
+
   void addFirst(E data)
   {
-    DequeNode d = new DequeNode(data);
-    if( first != null )
+    DequeNode d = new DequeNode( data );
+    if( isEmpty() )
     {
       d.next = first;
       first = d;
@@ -147,17 +177,22 @@ class MyDeque<E>
     }
   }
 
-  E getFirst()
+  E removeFirst()
   {
     DequeNode d = first;
     first = first.next;
     return d.getData();
   }
 
+  E getFirst()
+  {
+    return first.getData();
+  }
+
   void addLast(E data)
   {
     DequeNode d = new DequeNode(data);
-    if( last != null )
+    if( isEmpty() )
     {
       d.prev = last;
       last = d;
@@ -169,11 +204,16 @@ class MyDeque<E>
     }
   }
 
-  E getLast()
+  E removeLast()
   {
     DequeNode d = last;
     last = last.prev;
     return d.getData();
+  }
+
+  E getLast()
+  {
+    return last.getData();
   }
 
   private class DequeNode
@@ -186,11 +226,20 @@ class MyDeque<E>
     {
       this.data = data;
     }
+
     E getData()
     {
       return data;
     }
 
+    int countNodes( int n )
+    {
+      n++;
+      if ( next != null )
+      {
+        return next.countNodes( n );
+      }
+      return n;
+    }
   }
 }
-
