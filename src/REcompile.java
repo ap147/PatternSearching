@@ -30,7 +30,7 @@ public class REcompile
     static int index = 0;
     static boolean justDoIt = false;
     static int count;
-
+    static final char empty = '\u0000';
     public static void main(String[] args)
     {
         System.err.println("Expersion : " + args[0]);
@@ -40,14 +40,14 @@ public class REcompile
     }
     private static void parse()
     {
-        System.out.println("par");
+        System.err.println("par");
         int initial;
 
         initial=expression();// <-
-        System.out.println("ENDING ");
+        System.err.println("ENDING ");
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
-        set_state(state,' ',0,0);
+        set_state(state,'\\',0,0);
         printArrays();
     }
 
@@ -74,10 +74,10 @@ public class REcompile
             f = state - 1;
             r = t1 = factor();
             // printArrays();
-            System.out.println(regex.length);
+            System.err.println(regex.length);
             if (index <= regex.length - 1) {
                 if (index < regex.length && regex[index].equals("*")) {
-                    set_state(state, ' ', state + 1, t1);
+                    set_state(state, empty, state + 1, t1);
                     index++;
                     r = state;
                     state++;
@@ -91,7 +91,7 @@ public class REcompile
                     r = state;
                     state++;
                     t2 = term();
-                    set_state(r, ' ', t1, t2);
+                    set_state(r, empty, t1, t2);
                     if (next1[f] == next2[f])
                         next2[f] = state;
                     next1[f] = state;
@@ -102,11 +102,11 @@ public class REcompile
                     set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
                     //4
                     next2[prevState] = state;
-                    ch[prevState] = ' ';
+                    ch[prevState] = empty;
 
                     state++;
                     //7
-                    set_state(state, ' ', state + 1, state + 1);
+                    set_state(state, empty, state + 1, state + 1);
 
                     next1[prevState] = state;
 
@@ -132,7 +132,7 @@ public class REcompile
         //System.err.println("factor : " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
 
         int r =0;
-        System.out.println(index);
+        System.err.println(index);
         if(isvocab(regex[index]) || justDoIt)
         {
             char x = regex[index].charAt(0);
@@ -146,14 +146,14 @@ public class REcompile
             printArrays();
             index++;
             if (regex[index].equals("]")) {
-                System.out.println("------------- DO MAGIC HERE ([]) ");
+                System.err.println("------------- DO MAGIC HERE ([]) ");
             }
             else
             {
                 justDoIt = true;
                 while(!regex[index].equals("]"))
                 {
-                    System.out.println("----------------------Index : " + index);
+                    System.err.println("----------------------Index : " + index);
                     count++;
 
                     printArrays();
@@ -171,7 +171,7 @@ public class REcompile
                         r = state;
                         state++;
                         t2 = term();
-                        set_state(r, ' ', t1, t2);
+                        set_state(r, '\u0000', t1, t2);
                         if (next1[f] == next2[f])
                             next2[f] = state;
                         next1[f] = state;
@@ -194,7 +194,7 @@ public class REcompile
         else
             error();
 
-        print();
+        //print();
         return(r);
     }
 
@@ -225,12 +225,22 @@ public class REcompile
     }
     private static void printArrays()
     {
-        System.out.println();
-        System.out.println("s | ch 1 2");
-        for(int x =0; x< ch.length; x++)
+        //System.out.println();
+        //System.out.println("s | ch 1 2");
+        for(int x =0; x< state; x++)
         {
-            System.out.println(x +" | " +ch[x] + " " + next1[x] + " " + next2[x]);
+            if(!ch[x].equals(null))
+            {
+                System.out.println(x +" " +ch[x] + " " + next1[x] + " " + next2[x]);
+               // System.out.println(x +" | " +ch[x] + " " + next1[x] + " " + next2[x]);
+            }
+
         }
+    }
+    private static void dump ()
+    {
+        int x =0;
+
     }
     private static void error()
     {
