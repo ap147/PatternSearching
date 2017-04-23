@@ -28,6 +28,8 @@ public class REcompile
     static Integer state=0;
     static String [] regex;
     static int index = 0;
+    static boolean justDoIt = false;
+    static int count;
 
     public static void main(String[] args)
     {
@@ -63,75 +65,75 @@ public class REcompile
 
     private static int term()
     {
-        System.err.println("term "+ regex[index]+ " isvocab : " +   isvocab(regex[index]));
+        int r;
 
-        int r, t1,t2,f;
-        f=state-1; r=t1=factor();
-       // printArrays();
-        System.out.println(regex.length);
-        if(index <= regex.length-1)
-        {
-            if (index < regex.length && regex[index].equals("*"))
-            {
-                set_state(state, ' ', state + 1, t1);
-                index++;
-                r = state;
-                state++;
+
+            System.err.println("term " + regex[index] + " isvocab : " + isvocab(regex[index]));
+
+            int t1, t2, f;
+            f = state - 1;
+            r = t1 = factor();
+            // printArrays();
+            System.out.println(regex.length);
+            if (index <= regex.length - 1) {
+                if (index < regex.length && regex[index].equals("*")) {
+                    set_state(state, ' ', state + 1, t1);
+                    index++;
+                    r = state;
+                    state++;
+                }
+                if (index < regex.length && regex[index].equals("+")) {
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                    f = state - 1;
+                    index++;
+                    r = state;
+                    state++;
+                    t2 = term();
+                    set_state(r, ' ', t1, t2);
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                }
+                if (index < regex.length && regex[index].equals("?")) {
+                    int prevState = state - 1;
+                    //5
+                    set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
+                    //4
+                    next2[prevState] = state;
+                    ch[prevState] = ' ';
+
+                    state++;
+                    //7
+                    set_state(state, ' ', state + 1, state + 1);
+
+                    next1[prevState] = state;
+
+                    index++;
+                    r = state;
+                    state++;
+                }
+
+                if (index < regex.length && regex[index].equals("\\")) {
+                    index++;
+                    char x = regex[index].charAt(0);
+                    set_state(state, x, state + 1, state + 1);
+                    index++;
+                    state++;
+                }
             }
-            if (index < regex.length && regex[index].equals("+"))
-            {
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
-                f = state - 1;
-                index++;
-                r = state;
-                state++;
-                t2 = term();
-                set_state(r, ' ', t1, t2);
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
-            }
-            if (index < regex.length && regex[index].equals("?"))
-            {
-                int prevState = state-1;
-                //5
-                set_state(state, ch[prevState], next1[prevState]+2, next2[prevState]+2);
-                //4
-                next2[prevState] = state;
-                ch[prevState] = ' ';
 
-                state++;
-                //7
-                set_state(state, ' ', state+1, state+1);
-
-                next1[prevState] = state;
-
-                index++;
-                r = state;
-                state++;
-            }
-
-            if(index < regex.length && regex[index].equals("\\"))
-            {
-                index++;
-                char x = regex[index].charAt(0);
-                set_state(state, x, state+1, state+1);
-                index++;
-                state++;
-            }
-        }
         return(r);
     }
 
     private static int factor()
     {
-        System.err.println("factor : " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
+        //System.err.println("factor : " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
 
         int r =0;
-
-        if(isvocab(regex[index]))
+        System.out.println(index);
+        if(isvocab(regex[index]) || justDoIt)
         {
             char x = regex[index].charAt(0);
             set_state(state, x, state + 1, state + 1);
@@ -140,41 +142,47 @@ public class REcompile
             state++;
         }
         else
-        if(regex[index].equals("["))
-        {
+        if(regex[index].equals("[")) {
             printArrays();
-            if(regex[index].equals("]"))
-            {
+            index++;
+            if (regex[index].equals("]")) {
                 System.out.println("------------- DO MAGIC HERE ([]) ");
             }
-            while (!regex[index].equals("]"))
+            else
             {
-                int f;
-                if(ch.length != 0)
+                justDoIt = true;
+                while(!regex[index].equals("]"))
                 {
-                    f = state -1;
+                    System.out.println("----------------------Index : " + index);
+                    count++;
+
+                    printArrays();
+                    if(count >= 2)
+                    {
+                        System.err.println("term2 " + index + " isvocab : " + isvocab(regex[5]));
+                        int t1, t2, f;
+                        f = state - 1;
+                        r = t1 = factor();
+                        if (next1[f] == next2[f])
+                            next2[f] = state;
+                        next1[f] = state;
+                        f = state - 1;
+                        //index++;
+                        r = state;
+                        state++;
+                        t2 = term();
+                        set_state(r, ' ', t1, t2);
+                        if (next1[f] == next2[f])
+                            next2[f] = state;
+                        next1[f] = state;
+                    }
+
                 }
-
-                index++;
-                int t1,t2;
-                f=state-1; r=t1=factor();
-
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
-                f = state - 1;
-                index++;
-                r = state;
-                state++;
-                t2 = term();
-                set_state(r, ' ', t1, t2);
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
-
+                justDoIt = false;
             }
-            index++;
 
+
+        }
             /*
             index++; r=expression();// <-
             if(regex[index].equals("]"))
@@ -182,7 +190,7 @@ public class REcompile
             else
                 error();
                 */
-        }
+
         else
             error();
 
