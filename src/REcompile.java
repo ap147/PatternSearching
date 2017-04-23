@@ -72,14 +72,14 @@ public class REcompile
         System.out.println(regex.length);
         if(index <= regex.length-1)
         {
-            if (regex[index].equals("*"))
+            if (index < regex.length && regex[index].equals("*"))
             {
                 set_state(state, ' ', state + 1, t1);
                 index++;
                 r = state;
                 state++;
             }
-            if (regex[index].equals("+"))
+            if (index < regex.length && regex[index].equals("+"))
             {
                 if (next1[f] == next2[f])
                     next2[f] = state;
@@ -94,8 +94,9 @@ public class REcompile
                     next2[f] = state;
                 next1[f] = state;
             }
-            if (regex[index].equals("?"))
+            if (index < regex.length && regex[index].equals("?"))
             {
+                System.out.println("Dee------------------p");
                 int prevState = state-1;
                 //5
                 set_state(state, ch[prevState], next1[prevState]+2, next2[prevState]+2);
@@ -113,6 +114,17 @@ public class REcompile
                 r = state;
                 state++;
             }
+
+            if(index < regex.length && regex[index].equals("\\"))
+            {
+                index++;
+                char x = regex[index].charAt(0);
+                set_state(state, x, state+1, state+1);
+                index++;
+                state++;
+
+            }
+
         }
         return(r);
     }
