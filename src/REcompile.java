@@ -30,7 +30,8 @@ public class REcompile
     static int index = 0;
     static boolean justDoIt = false;
     static int count;
-    static final char empty = '\u0000';
+    static final char empty = '\u0012';
+    static final char consumeNSkip = '\u0011';
     public static void main(String[] args)
     {
         System.err.println("Expersion : " + args[0]);
@@ -47,8 +48,10 @@ public class REcompile
         System.err.println("ENDING ");
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
-        set_state(state,'\\',0,0);
+        set_state(state,empty,0,0);
+        dump();
         printArrays();
+
     }
 
     private static int expression()
@@ -76,13 +79,26 @@ public class REcompile
             // printArrays();
             System.err.println(regex.length);
             if (index <= regex.length - 1) {
-                if (index < regex.length && regex[index].equals("*")) {
-                    set_state(state, empty, state + 1, t1);
+                if (index < regex.length && regex[index].equals("*"))
+                {
+                    int prevState = state - 1;
+
+                    set_state(state, ch[prevState], next1[prevState] + 1, next2[prevState] + 2);
+
+                    next2[prevState] = state;
+                    ch[prevState] = empty;
+
+                    state++;
+
+                    set_state(state, empty, state + 1, state -1 );
+
+                    next1[prevState] = state;
+
                     index++;
                     r = state;
                     state++;
                 }
-                if (index < regex.length && regex[index].equals("+")) {
+                if (index < regex.length && regex[index].equals("|")) {
                     if (next1[f] == next2[f])
                         next2[f] = state;
                     next1[f] = state;
@@ -198,12 +214,15 @@ public class REcompile
         return(r);
     }
 
-
-
     private static boolean isvocab(String c)
     {
-        char x = c.charAt(0);
-        return Character.isAlphabetic(x);
+        if(!justDoIt)
+        {
+            char x = c.charAt(0);
+            return Character.isAlphabetic(x);
+        }
+
+        return true;
     }
 
     private static void set_state(int s, char c, int n1, int n2)
@@ -225,22 +244,27 @@ public class REcompile
     }
     private static void printArrays()
     {
-        //System.out.println();
-        //System.out.println("s | ch 1 2");
-        for(int x =0; x< state; x++)
+        System.err.println();
+        System.err.println("s | ch 1 2");
+        for(int x =0; x< state+1; x++)
         {
-            if(!ch[x].equals(null))
+            if(!next1[x].equals(null))
             {
-                System.out.println(x +" " +ch[x] + " " + next1[x] + " " + next2[x]);
-               // System.out.println(x +" | " +ch[x] + " " + next1[x] + " " + next2[x]);
+                System.err.println(x +" | " +ch[x] + " " + next1[x] + " " + next2[x]);
             }
 
         }
     }
     private static void dump ()
     {
-        int x =0;
+        for(int x =0; x< state+1; x++)
+        {
+            if(!next1[x].equals(null))
+            {
+                System.out.println(x +" " +ch[x] + " " + next1[x] + " " + next2[x]);
+            }
 
+        }
     }
     private static void error()
     {
