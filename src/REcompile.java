@@ -66,7 +66,6 @@ public class REcompile
         System.err.println("term "+ regex[index]+ " isvocab : " +   isvocab(regex[index]));
 
         int r, t1,t2,f;
-
         f=state-1; r=t1=factor();
        // printArrays();
         System.out.println(regex.length);
@@ -96,7 +95,6 @@ public class REcompile
             }
             if (index < regex.length && regex[index].equals("?"))
             {
-                System.out.println("Dee------------------p");
                 int prevState = state-1;
                 //5
                 set_state(state, ch[prevState], next1[prevState]+2, next2[prevState]+2);
@@ -122,9 +120,7 @@ public class REcompile
                 set_state(state, x, state+1, state+1);
                 index++;
                 state++;
-
             }
-
         }
         return(r);
     }
@@ -146,11 +142,46 @@ public class REcompile
         else
         if(regex[index].equals("["))
         {
+            printArrays();
+            if(regex[index].equals("]"))
+            {
+                System.out.println("------------- DO MAGIC HERE ([]) ");
+            }
+            while (!regex[index].equals("]"))
+            {
+                int f;
+                if(ch.length != 0)
+                {
+                    f = state -1;
+                }
+
+                index++;
+                int t1,t2;
+                f=state-1; r=t1=factor();
+
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                f = state - 1;
+                index++;
+                r = state;
+                state++;
+                t2 = term();
+                set_state(r, ' ', t1, t2);
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+
+            }
+            index++;
+
+            /*
             index++; r=expression();// <-
             if(regex[index].equals("]"))
                 index++;
             else
                 error();
+                */
         }
         else
             error();
