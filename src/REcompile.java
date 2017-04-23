@@ -9,10 +9,13 @@ public class REcompile
     private static Integer state=0;
     private static String [] regex;
     private static int index = 0;
+
     private static boolean justDoIt = false;
     private static int count;
+
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
+
     public static void main(String[] args)
     {
         System.err.println("Expersion : " + args[0]);
@@ -50,99 +53,93 @@ public class REcompile
     private static int term()
     {
         int r;
-            //System.err.println("term " + regex[index] + " isvocab : " + isvocab(regex[index]));
-
-            int t1, t2, f;
-            f = state - 1;
-            r = t1 = factor();
-            // printArrays();
-            System.err.println(regex.length);
-            if (index <= regex.length - 1)
+        int t1, t2, f;
+        f = state - 1;
+        r = t1 = factor();
+        // printArrays();
+        System.err.println(regex.length);
+        if (index <= regex.length - 1) {
+            //escaped characters (i.e. symbols preceded by \)
+            if (index < regex.length && regex[index].equals("\\"))
             {
-                //escaped characters (i.e. symbols preceded by \)
-                if (index < regex.length && regex[index].equals("\\"))
-                {
-                    index++;
-                    char x = regex[index].charAt(0);
-                    set_state(state, x, state + 1, state + 1);
-                    index++;
-                    state++;
-                    term();
-                }
-                //parentheses (i.e. the most deeply nested regexps have the highest precedence)
-                //list of alternative literals (i.e. [ and ])
-                //repetition operators (i.e. * and ?)
-                if (index < regex.length && regex[index].equals("*"))
-                {
-                    int prevState = state - 1;
-
-                    set_state(state, ch[prevState], next1[prevState] + 1, next2[prevState] + 2);
-
-                    next2[prevState] = state;
-                    ch[prevState] = empty;
-
-                    state++;
-                    set_state(state, empty, state + 1, state -1 );
-                    next1[prevState] = state;
-                    index++;
-                    r = state;
-                    state++;
-                    term();
-                }
-                if (index < regex.length && regex[index].equals("?"))
-                {
-                    int prevState = state - 1;
-                    //5
-                    set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
-                    //4
-                    next2[prevState] = state;
-                    ch[prevState] = empty;
-
-                    state++;
-                    //7
-                    set_state(state, empty, state + 1, state + 1);
-
-                    next1[prevState] = state;
-
-                    index++;
-                    r = state;
-                    state++;
-                   // term();
-                }
-                // concatenation
-                if(index<regex.length && regex[index].equals("."))
-                {
-                    set_state(state, consumeNSkip, state + 1, state + 1);
-                    index++;
-                    r = state;
-                    state++;
-                    //term();
-                }
-                //alternation (i.e. |)
-                if (index < regex.length && regex[index].equals("|")) {
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
-                    f = state - 1;
-                    index++;
-                    r = state;
-                    state++;
-                    t2 = term();
-                    set_state(r, empty, t1, t2);
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
-                }
-
+                index++;
+                char x = regex[index].charAt(0);
+                set_state(state, x, state + 1, state + 1);
+                index++;
+                state++;
+                term();
             }
+            //parentheses (i.e. the most deeply nested regexps have the highest precedence)
+            //list of alternative literals (i.e. [ and ])
+            //repetition operators (i.e. * and ?)
+            if (index < regex.length && regex[index].equals("*"))
+            {
+                int prevState = state - 1;
+                set_state(state, ch[prevState], next1[prevState] + 1, next2[prevState] + 2);
+
+                next2[prevState] = state;
+                ch[prevState] = empty;
+
+                state++;
+                set_state(state, empty, state + 1, state - 1);
+                next1[prevState] = state;
+                index++;
+                r = state;
+                state++;
+                term();
+            }
+            if (index < regex.length && regex[index].equals("?"))
+            {
+                int prevState = state - 1;
+                //5
+                set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
+                //4
+                next2[prevState] = state;
+                ch[prevState] = empty;
+
+                state++;
+                //7
+                set_state(state, empty, state + 1, state + 1);
+
+                next1[prevState] = state;
+
+                index++;
+                r = state;
+                state++;
+                // term();
+            }
+            // concatenation
+            if (index < regex.length && regex[index].equals("."))
+            {
+                set_state(state, consumeNSkip, state + 1, state + 1);
+                index++;
+                r = state;
+                state++;
+                //term();
+            }
+            //alternation (i.e. |)
+            if (index < regex.length && regex[index].equals("|"))
+            {
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                f = state - 1;
+                index++;
+                r = state;
+                state++;
+                t2 = term();
+                set_state(r, empty, t1, t2);
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+            }
+        }
         System.out.println("STATES"+state);
         return(r);
     }
 
     private static int factor()
     {
-        //System.err.println("factor : " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
-
         int r =0;
         System.err.println(index);
         if(index < regex.length ) {
@@ -186,8 +183,6 @@ public class REcompile
                     }
                     justDoIt = false;
                 }
-
-
             }
             /*
             index++; r=expression();// <-
@@ -211,7 +206,6 @@ public class REcompile
             char x = c.charAt(0);
             return Character.isAlphabetic(x);
         }
-
         return true;
     }
 
@@ -219,18 +213,10 @@ public class REcompile
     {
         ch[s]=c;next1[s]=n1;next2[s]=n2;
     }
-    private static void print()
-    {
-        System.out.println();
-        for(int x = index; x < regex.length; x++)
-        {
-            System.out.print(regex[x]);
-        }
-        System.out.println();
-    }
+
     private static void pintState(int s)
     {
-        System.out.println( s +" | " +ch[s] + " " + next1[s] + " " + next2[s]);
+        System.err.println( s +" | " +ch[s] + " " + next1[s] + " " + next2[s]);
     }
     private static void printArrays()
     {
@@ -253,8 +239,8 @@ public class REcompile
             {
                 System.out.println(x +" " +ch[x] + " " + next1[x] + " " + next2[x]);
             }
-            System.out.println(x +" " +ch[state] + " " + next1[state] + " " + next2[state]);
         }
+        System.out.println(state +" " +ch[state] + " " + next1[state] + " " + next2[state]);
     }
     private static void error()
     {
