@@ -12,6 +12,7 @@ public class REcompile
 
     private static boolean bracket = false;
     private static boolean customestartState = false;
+
     private static int count;
 
     private static int startState = 0;
@@ -21,14 +22,12 @@ public class REcompile
 
     public static void main(String[] args)
     {
-        System.err.println("Expersion : " + args[0]);
         regex = args[0].split("");
         parse();
         // System.out.println(isvocab(p[0]));
     }
     private static void parse()
     {
-        System.err.println("par");
         int initial;
 
         initial=expression();// <-
@@ -49,10 +48,19 @@ public class REcompile
         printArrays();
 
     }
+    private static void printStringArray()
+    {
+        for(int x = index; x < regex.length; x++)
+        {
+            System.out.print(regex[x]);
+        }
 
+    }
     private static int expression()
     {
-        System.err.println("exp " +regex[index]+ " isvocab : " +   isvocab(regex[index]));
+        System.err.print("expression (" );
+        printStringArray();
+        System.out.println(") ");
         int r;
 
         r=term();
@@ -64,13 +72,16 @@ public class REcompile
 
     private static int term()
     {
+        System.err.print("term (" );
+        printStringArray();
+        System.out.println(") ");
         int r;
         int t1, t2, f;
 
         f = state - 1;
         r = t1 = factor();
+
         // printArrays();
-        System.err.println(regex.length);
         if (index <= regex.length - 1)
         {
             //escaped characters (i.e. symbols preceded by \)
@@ -85,6 +96,15 @@ public class REcompile
             }
             //parentheses (i.e. the most deeply nested regexps have the highest precedence)
             //list of alternative literals (i.e. [ and ])
+            if(index < regex.length && regex[index].equals("["))
+            {
+                bracket = true;
+                index++;
+            }
+            else if(index < regex.length && regex[index].equals("]"))
+            {
+                bracket = false;
+            }
             if(bracket)
             {
                 if(!customestartState)
@@ -97,10 +117,11 @@ public class REcompile
                     next2[f] = state;
                 next1[f] = state;
                 f = state - 1;
-                index++;
+
                 r = state;
                 state++;
                 t2 = term();
+
                 set_state(r, empty, t1, t2);
                 if (next1[f] == next2[f])
                     next2[f] = state;
@@ -114,7 +135,7 @@ public class REcompile
                 next1[prevState] = state+1;
                 next2[prevState] = state;
                 ch[prevState] = empty;
-                
+
                 index++;
                 r = state;
                 state++;
@@ -172,28 +193,27 @@ public class REcompile
                         next2[f] = state;
                     next1[f] = state;
 
-                    //term();
-
+                    term();
             }
         }
-        System.out.println("Current STATES : "+state);
         return(r);
     }
 
     private static int factor() {
+        System.err.print("factor (" );
+        printStringArray();
+        System.out.println(") ");
         int r = 0;
 
         if (index < regex.length) {
-            System.err.println("----------------------------regex[index]" + regex[index]);
             if (isvocab(regex[index])) {
-
                 char x = regex[index].charAt(0);
                 set_state(state, x, state + 1, state + 1);
                 index++;
                 r = state;
                 state++;
             }
-            if (regex[index].equals("(")) {
+            else if (regex[index].equals("(")) {
                 index++;
                 r = expression();
                 if (regex[index].equals(")"))
@@ -210,16 +230,12 @@ public class REcompile
 
     private static boolean isvocab(String c)
     {
-        System.out.println("isvocab ? : " + c);
         if(!bracket)
         {
             char x = c.charAt(0);
             return Character.isAlphabetic(x);
         }
-        else if(bracket && regex[index].equals("]"))
-        {
-            return false;
-        }
+
         return true;
     }
 
