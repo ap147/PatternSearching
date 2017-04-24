@@ -59,7 +59,8 @@ public class REcompile
         r = t1 = factor();
         // printArrays();
         System.err.println(regex.length);
-        if (index <= regex.length - 1) {
+        if (index <= regex.length - 1)
+        {
             //escaped characters (i.e. symbols preceded by \)
             if (index < regex.length && regex[index].equals("\\") && !bracket)
             {
@@ -74,12 +75,13 @@ public class REcompile
             //list of alternative literals (i.e. [ and ])
             if(bracket)
             {
-                /*
-                System.out.println("x");
-                index++;
-                state++;
-                */
-                /*
+                printArrays();
+                if(f < 0)
+                {
+                    f = 0;
+                }
+
+                System.out.println("state : ----" +state);
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
@@ -89,10 +91,16 @@ public class REcompile
                 state++;
                 t2 = term();
                 set_state(r, empty, t1, t2);
+                if(f < 0)
+                {
+                    f = 0;
+                }
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
-                */
+
+
+                printArrays();
             }
             //repetition operators (i.e. * and ?)
             if (index < regex.length && regex[index].equals("*") && !bracket)
@@ -144,27 +152,32 @@ public class REcompile
             //alternation (i.e. |)
             if (index < regex.length && regex[index].equals("|") && !bracket)
             {
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
-                f = state - 1;
-                index++;
-                r = state;
-                state++;
-                t2 = term();
-                set_state(r, empty, t1, t2);
-                if (next1[f] == next2[f])
-                    next2[f] = state;
-                next1[f] = state;
+                    if(f < 0)
+                    {
+                        f = 0;
+                    }
+                    System.out.println("state : ----" +state);
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                    f = state - 1;
+                    index++;
+                    r = state;
+                    state++;
+                    t2 = term();
+                    set_state(r, empty, t1, t2);
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
             }
         }
-        System.out.println("STATES"+state);
+        System.out.println("Current STATES : "+state);
         return(r);
     }
 
     private static int factor() {
         int r = 0;
-        System.err.println(index);
+
         if (index < regex.length)
         {
             if (isvocab(regex[index]))
@@ -174,17 +187,20 @@ public class REcompile
                 index++;
                 r = state;
                 state++;
-            } else if (regex[index].equals("["))
+            }
+            else if (regex[index].equals("["))
             {
+
                 printArrays();
-                index++;
-                if (regex[index].equals("]"))
+
+                if (regex[index+1].equals("]"))
                 {
 
                     System.err.println("------------- DO MAGIC HERE ([]) ");
                 }
                 else
                 {
+                    bracket = true;
                     /*
                     bracket = true;
                     r = expression();// <-
@@ -198,7 +214,12 @@ public class REcompile
                     */
                 }
             }
-            //print();
+            else if(regex[index].equals("]"))
+            {
+                System.out.println("END OF ] DETECTED");
+                bracket = false;
+            }
+
         }
         else
         {
@@ -209,10 +230,15 @@ public class REcompile
 
     private static boolean isvocab(String c)
     {
+        System.out.println("isvocab ? : " + c);
         if(!bracket)
         {
             char x = c.charAt(0);
             return Character.isAlphabetic(x);
+        }
+        else if(bracket && regex[index].equals("]"))
+        {
+            return false;
         }
         return true;
     }
@@ -232,10 +258,10 @@ public class REcompile
         System.err.println("s | ch 1 2");
         for(int x =0; x< state; x++)
         {
-            if (!next1[x].equals(null))
-            {
+
+
                 System.err.println(x + " | " + ch[x] + " " + next1[x] + " " + next2[x]);
-            }
+
         }
         System.err.println(state +" | " +ch[state] + " " + next1[state] + " " + next2[state]);
     }
@@ -253,9 +279,10 @@ public class REcompile
     private static void error()
     {
         System.out.println("Error");
-        printArrays();
+        //printArrays();
     }
 }
+
 
 
 
