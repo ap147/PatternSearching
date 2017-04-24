@@ -6,12 +6,15 @@ public class REcompile
     private static Character ch [] = new Character[20];
     private static Integer next1 [] = new Integer[20];
     private static Integer next2 [] = new Integer[20];
-    private static Integer state=0;
+    private static Integer state=1;
     private static String [] regex;
     private static int index = 0;
 
     private static boolean bracket = false;
+    private static boolean customestartState = false;
     private static int count;
+
+    private static int startState = 0;
 
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
@@ -33,6 +36,15 @@ public class REcompile
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
         set_state(state,empty,0,0);
+
+        if(!customestartState)
+        {
+            startState = 1;
+        }
+        ch[0] = ch[startState];
+        next1[0]= next1[startState];
+        next2[0] =next2[startState];
+
         dump();
         printArrays();
 
@@ -152,11 +164,26 @@ public class REcompile
             //alternation (i.e. |)
             if (index < regex.length && regex[index].equals("|") && !bracket)
             {
-                    if(f < 0)
-                    {
-                        f = 0;
-                    }
-                    System.out.println("state : ----" +state);
+                /*
+                int prevState = state-1;
+                System.out.println("Prev State : " + prevState);
+                 //the | state
+                 index++;
+                 set_state(state, empty, prevState, state+1);
+                 startState = state;
+                 state++;
+                 char x = regex[index].charAt(0);
+                 set_state(state, x, state+1, state+1);
+                 index++;
+                 state++;
+                 customestartState = true;
+                 term();
+        */
+
+                if(!customestartState) {
+                    System.out.println("state : ----" + state);
+                    startState = state;
+                    customestartState = true;
                     if (next1[f] == next2[f])
                         next2[f] = state;
                     next1[f] = state;
@@ -169,6 +196,27 @@ public class REcompile
                     if (next1[f] == next2[f])
                         next2[f] = state;
                     next1[f] = state;
+                }
+                else
+                {
+                    System.out.println("state : ----" + state);
+                   // startState = state;
+                    customestartState = true;
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                    f = state - 1;
+                    index++;
+                    r = state;
+                    state++;
+                    t2 = term();
+                    set_state(r, empty, t1, t2);
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                }
+                    //term();
+
             }
         }
         System.out.println("Current STATES : "+state);
