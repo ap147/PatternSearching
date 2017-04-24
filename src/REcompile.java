@@ -10,7 +10,7 @@ public class REcompile
     private static String [] regex;
     private static int index = 0;
 
-    private static boolean justDoIt = false;
+    private static boolean bracket = false;
     private static int count;
 
     private static final char empty = '\u0012';
@@ -54,13 +54,14 @@ public class REcompile
     {
         int r;
         int t1, t2, f;
+
         f = state - 1;
         r = t1 = factor();
         // printArrays();
         System.err.println(regex.length);
         if (index <= regex.length - 1) {
             //escaped characters (i.e. symbols preceded by \)
-            if (index < regex.length && regex[index].equals("\\"))
+            if (index < regex.length && regex[index].equals("\\") && !bracket)
             {
                 index++;
                 char x = regex[index].charAt(0);
@@ -71,8 +72,30 @@ public class REcompile
             }
             //parentheses (i.e. the most deeply nested regexps have the highest precedence)
             //list of alternative literals (i.e. [ and ])
+            if(bracket)
+            {
+                /*
+                System.out.println("x");
+                index++;
+                state++;
+                */
+                /*
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                f = state - 1;
+                index++;
+                r = state;
+                state++;
+                t2 = term();
+                set_state(r, empty, t1, t2);
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                */
+            }
             //repetition operators (i.e. * and ?)
-            if (index < regex.length && regex[index].equals("*"))
+            if (index < regex.length && regex[index].equals("*") && !bracket)
             {
                 int prevState = state - 1;
                 set_state(state, ch[prevState], next1[prevState] + 1, next2[prevState] + 2);
@@ -88,8 +111,9 @@ public class REcompile
                 state++;
                 term();
             }
-            if (index < regex.length && regex[index].equals("?"))
+            if (index < regex.length && regex[index].equals("?") && !bracket)
             {
+
                 int prevState = state - 1;
                 //5
                 set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
@@ -109,7 +133,7 @@ public class REcompile
                 // term();
             }
             // concatenation
-            if (index < regex.length && regex[index].equals("."))
+            if (index < regex.length && regex[index].equals(".") && !bracket)
             {
                 set_state(state, consumeNSkip, state + 1, state + 1);
                 index++;
@@ -118,7 +142,7 @@ public class REcompile
                 //term();
             }
             //alternation (i.e. |)
-            if (index < regex.length && regex[index].equals("|"))
+            if (index < regex.length && regex[index].equals("|") && !bracket)
             {
                 if (next1[f] == next2[f])
                     next2[f] = state;
@@ -138,70 +162,54 @@ public class REcompile
         return(r);
     }
 
-    private static int factor()
-    {
-        int r =0;
+    private static int factor() {
+        int r = 0;
         System.err.println(index);
-        if(index < regex.length ) {
-            if (isvocab(regex[index]) || justDoIt) {
+        if (index < regex.length)
+        {
+            if (isvocab(regex[index]))
+            {
                 char x = regex[index].charAt(0);
                 set_state(state, x, state + 1, state + 1);
                 index++;
                 r = state;
                 state++;
-            } else if (regex[index].equals("[")) {
+            } else if (regex[index].equals("["))
+            {
                 printArrays();
                 index++;
-                if (regex[index].equals("]")) {
+                if (regex[index].equals("]"))
+                {
+
                     System.err.println("------------- DO MAGIC HERE ([]) ");
-                } else {
-                    justDoIt = true;
-                    while (!regex[index].equals("]")) {
-                        System.err.println("----------------------Index : " + index);
-                        count++;
-
-                        printArrays();
-                        if (count >= 2) {
-                            System.err.println("term2 " + index + " isvocab : " + isvocab(regex[5]));
-                            int t1, t2, f;
-                            f = state - 1;
-                            r = t1 = factor();
-                            if (next1[f] == next2[f])
-                                next2[f] = state;
-                            next1[f] = state;
-                            f = state - 1;
-                            //index++;
-                            r = state;
-                            state++;
-                            t2 = term();
-                            set_state(r, '\u0000', t1, t2);
-                            if (next1[f] == next2[f])
-                                next2[f] = state;
-                            next1[f] = state;
-                        }
-
+                }
+                else
+                {
+                    /*
+                    bracket = true;
+                    r = expression();// <-
+                    if (regex[index].equals("]"))
+                    {
+                        bracket= false;
+                        index++;
+                    } else {
+                        error();
                     }
-                    justDoIt = false;
+                    */
                 }
             }
-            /*
-            index++; r=expression();// <-
-            if(regex[index].equals("]"))
-                index++;
-            else
-                error();
-                */
-
-            else
-                error();
+            //print();
         }
-        //print();
-        return(r);
+        else
+        {
+            error();
+        }
+        return (r);
     }
 
     private static boolean isvocab(String c)
     {
-        if(!justDoIt)
+        if(!bracket)
         {
             char x = c.charAt(0);
             return Character.isAlphabetic(x);
