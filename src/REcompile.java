@@ -87,13 +87,12 @@ public class REcompile
             //list of alternative literals (i.e. [ and ])
             if(bracket)
             {
-                printArrays();
-                if(f < 0)
+                if(!customestartState)
                 {
-                    f = 0;
+                    startState = state;
                 }
+                customestartState = true;
 
-                System.out.println("state : ----" +state);
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
@@ -103,29 +102,19 @@ public class REcompile
                 state++;
                 t2 = term();
                 set_state(r, empty, t1, t2);
-                if(f < 0)
-                {
-                    f = 0;
-                }
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
-
-
-                printArrays();
             }
             //repetition operators (i.e. * and ?)
             if (index < regex.length && regex[index].equals("*") && !bracket)
             {
                 int prevState = state - 1;
-                set_state(state, ch[prevState], next1[prevState] + 1, next2[prevState] + 2);
-
+                set_state(state, ch[prevState], state-1, state-1);
+                next1[prevState] = state+1;
                 next2[prevState] = state;
                 ch[prevState] = empty;
-
-                state++;
-                set_state(state, empty, state + 1, state - 1);
-                next1[prevState] = state;
+                
                 index++;
                 r = state;
                 state++;
@@ -164,43 +153,11 @@ public class REcompile
             //alternation (i.e. |)
             if (index < regex.length && regex[index].equals("|") && !bracket)
             {
-                /*
-                int prevState = state-1;
-                System.out.println("Prev State : " + prevState);
-                 //the | state
-                 index++;
-                 set_state(state, empty, prevState, state+1);
-                 startState = state;
-                 state++;
-                 char x = regex[index].charAt(0);
-                 set_state(state, x, state+1, state+1);
-                 index++;
-                 state++;
-                 customestartState = true;
-                 term();
-        */
 
-                if(!customestartState) {
-                    System.out.println("state : ----" + state);
-                    startState = state;
-                    customestartState = true;
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
-                    f = state - 1;
-                    index++;
-                    r = state;
-                    state++;
-                    t2 = term();
-                    set_state(r, empty, t1, t2);
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
-                }
-                else
+                if(!customestartState)
                 {
-                    System.out.println("state : ----" + state);
-                   // startState = state;
+                    startState = state;
+                }
                     customestartState = true;
                     if (next1[f] == next2[f])
                         next2[f] = state;
@@ -214,7 +171,7 @@ public class REcompile
                     if (next1[f] == next2[f])
                         next2[f] = state;
                     next1[f] = state;
-                }
+
                     //term();
 
             }
@@ -226,52 +183,27 @@ public class REcompile
     private static int factor() {
         int r = 0;
 
-        if (index < regex.length)
-        {
-            if (isvocab(regex[index]))
-            {
+        if (index < regex.length) {
+            System.err.println("----------------------------regex[index]" + regex[index]);
+            if (isvocab(regex[index])) {
+
                 char x = regex[index].charAt(0);
                 set_state(state, x, state + 1, state + 1);
                 index++;
                 r = state;
                 state++;
             }
-            else if (regex[index].equals("["))
-            {
-
-                printArrays();
-
-                if (regex[index+1].equals("]"))
-                {
-
-                    System.err.println("------------- DO MAGIC HERE ([]) ");
-                }
+            if (regex[index].equals("(")) {
+                index++;
+                r = expression();
+                if (regex[index].equals(")"))
+                    index++;
                 else
-                {
-                    bracket = true;
-                    /*
-                    bracket = true;
-                    r = expression();// <-
-                    if (regex[index].equals("]"))
-                    {
-                        bracket= false;
-                        index++;
-                    } else {
-                        error();
-                    }
-                    */
-                }
-            }
-            else if(regex[index].equals("]"))
-            {
-                System.out.println("END OF ] DETECTED");
-                bracket = false;
+                    error();
+            } else {
+                error();
             }
 
-        }
-        else
-        {
-            error();
         }
         return (r);
     }
