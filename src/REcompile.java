@@ -16,6 +16,7 @@ public class REcompile
     private static int count;
     private static int temp;
     private static int startState = 1;
+    private static int lastStartState = 1;
     private static final char nulll = '\u0000';
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
@@ -35,16 +36,12 @@ public class REcompile
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
         set_state(state,nulll,0,0);
 
-        /*
-        if(!customestartState)
-        {
-            startState = 1;
-        }
-        */
         ch[0] = nulll;
         next1[0]= startState;
         next2[0] =startState;
 
+
+        next1[startState] = lastStartState;
         dump();
         printArrays();
 
@@ -136,7 +133,7 @@ public class REcompile
             if (index < regex.length && regex[index].equals("*") && !bracket)
             {
                 int prevState = state - 1;
-                set_state(state, ch[prevState], state-1, state-1);
+                set_state(state, ch[prevState], state-1, t1);//state-1);
                 next1[prevState] = state+1;
                 next2[prevState] = state;
                 ch[prevState] = empty;
@@ -182,28 +179,67 @@ public class REcompile
 
                 if(!customestartState)
                 {
+                    count++;
+                    lastStartState = startState;
                     startState = state;
+                    System.err.println("Previous Start State : " + lastStartState + " New Start State :" + state);
                 }
-                    customestartState = true;
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
-                    f = state - 1;
-                    index++;
-                    r = state;
-                    state++;
-                    t2 = term();
-                    set_state(r, empty, t1, t2);
-                    if (next1[f] == next2[f])
-                        next2[f] = state;
-                    next1[f] = state;
 
-                   // term();
+                customestartState = true;
+                /*
+                if(doit())
+                {
+                    if (next1[f] == next2[f])
+                        next2[f] = state;
+                    next1[f] = state;
+                }
+                */
+
+
+                f = state - 1;
+                index++;
+                r = state;
+                state++;
+                t2 = term();
+                /*
+                //set_state(r, empty,lastStartState,lastStartState);
+                if(count == 1) {
+
+                    set_state(r, empty, lastStartState, t2);// t1, t2);
+                    pintState(r);
+                    System.out.println("----------------------------------") ;
+                }
+                else
+                {
+                    set_state(r, empty, t1, t2);// t1, t2);
+                }
+                */
+
+
+                    set_state(r, empty, t1, t2);
+
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+
+
             }
         }
+
         return(r);
     }
-
+    private static boolean doit()
+    {
+        System.err.println(startState + "  " + (state -2));
+        if(startState == state -2)
+        {
+            count = 1;
+            System.err.println("----------------- true");
+            return true;
+        }
+        System.err.println("----------------- false");
+        return false;
+    }
     private static int factor() {
         System.err.print("factor (" );
         printStringArray();
@@ -216,6 +252,7 @@ public class REcompile
                 set_state(state, x, state + 1, state + 1);
                 index++;
                 r = state;
+
                 state++;
                 if(bracket)
                 {
