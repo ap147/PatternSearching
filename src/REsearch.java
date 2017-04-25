@@ -8,6 +8,9 @@ import java.util.Scanner;
 
 class REsearch
 {
+  private static final char anyChar = '\u0011';
+  private static final char branch = '\u0012';
+
   static LinkedList<FSMState> all_states = new LinkedList<>();
   static MyDeque<FSMState> deque = new MyDeque<>();
 
@@ -17,15 +20,25 @@ class REsearch
     printStates();
     try
     {
+      //open file given as argument
       BufferedReader in = new BufferedReader( new FileReader( args[0] ));
-      String line, s;
+      String line;
+      String s;
+      //print every line which matches pattern
       while ( ( line = in.readLine() ) != null )
       {
         s = line;
+        //try match pattern with line, starting at any point
         while ( s.length() > 0)
         {
-          if ( search(s) ) System.out.println( line );
-          else s = s.substring(1);
+          if ( search(s) )
+          {
+            System.out.println( line );
+          }
+          else
+          {
+            s = s.substring(1);
+          }
         }
       }
 
@@ -36,37 +49,58 @@ class REsearch
     }
   }
 
+  /**
+   * does line match FSM pattern
+   * @param line input string
+   * @return true if string starting at line[0] matches pattern
+   */
   static boolean search( String line )
   {
     FSMState current;
     while ( line.length() > 0 )
     {
       current = deque.removeFirst();
+      //if scan char...
       if ( current.getId() == -1 )
       {
+        //...and deque is empty, FAIL.
         if ( deque.isEmpty() )
         {
           return false;
         }
-        else deque.addLast( current );
+        //...and deque is not empty, move scan char to end of deque; current states = next states
+        else
+        {
+          deque.addLast( current );
+        }
       }
-      //branching symbol. tbd
-      else if ( current.getPattern() ==  '\u0000' )
+      //if branching state, then add both states to current states
+      else if ( current.getPattern() ==  branch )
       {
         for ( int n : current.getNext() )
         {
           deque.addFirst( all_states.get(n) );
         }
       }
-      else if ( current.getPattern() == line.charAt( 0 ) )
+      //if match, consume and add next to next states
+      else if ( current.getPattern() == line.charAt( 0 ) || current.getPattern() == anyChar )
       {
         current = all_states.get( current.getNext()[0] );
-        if ( current.getNext()[0] == 0 ) return true;
+        //if final state reached, SUCCESS!
+        if ( current.getNext()[0] == 0 )
+        {
+          return true;
+        }
         deque.addLast( current );
         line = line.substring(1);
       }
-      else return false;
+      //if not match and not special case, FAIL.
+      else
+      {
+        return false;
+      }
     }
+    //if end of string reached and not at success state, FAIL.
     return false;
   }
 
