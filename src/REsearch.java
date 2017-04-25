@@ -1,6 +1,5 @@
-/**
- * Created by Amarjot8 on 05-Apr-17.
- */
+//Joseph Boyd (1264974)
+//Amarjot Parmar (1255668)
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.LinkedList;
