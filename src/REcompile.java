@@ -117,9 +117,10 @@ public class REcompile
             }
             if(bracket & index > temp)
             {
-                if(!customestartState)
+                System.err.print(index + "            ---------------- INDEX");
+                if(!customestartState&&index ==2)
                 {
-                    startState = state;
+                    startState = state ;
                 }
                 customestartState = true;
 
@@ -286,7 +287,7 @@ public class REcompile
                 r = state;
 
                 state++;
-                if(bracket)
+                if(!bracket)
                 {
                     customestartState = false;
                 }
