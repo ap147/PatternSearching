@@ -51,7 +51,7 @@ public class REcompile
     {
         for(int x = index; x < regex.length; x++)
         {
-            System.out.print(regex[x]);
+            System.err.print(regex[x]);
         }
 
     }
@@ -59,7 +59,7 @@ public class REcompile
     {
         System.err.print("expression (" );
         printStringArray();
-        System.out.println(") ");
+        System.err.println(") ");
         int r;
 
         r=term();
@@ -73,7 +73,7 @@ public class REcompile
     {
         System.err.print("term (" );
         printStringArray();
-        System.out.println(") ");
+        System.err.println(") ");
         int r;
         int t1, t2, f;
 
@@ -105,7 +105,7 @@ public class REcompile
             else if(index < regex.length && regex[index].equals("]"))
             {
                 bracket = false;
-                System.out.println("BRACKETS ENDED");
+                System.err.println("BRACKETS ENDED");
                 index++;
             }
             if(bracket & index > temp)
@@ -205,7 +205,7 @@ public class REcompile
     private static int factor() {
         System.err.print("factor (" );
         printStringArray();
-        System.out.println(") ");
+        System.err.println(") ");
         int r = 0;
 
         if (index < regex.length) {
