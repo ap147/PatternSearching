@@ -215,7 +215,10 @@ public class REcompile
                 index++;
                 r = state;
                 state++;
-                customestartState = false;
+                if(bracket)
+                {
+                    customestartState = false;
+                }
             }
             else if (regex[index].equals("(")) {
                 index++;
