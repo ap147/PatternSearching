@@ -18,23 +18,25 @@ class REsearch
   public static void main ( String[] args )
   {
     buildFSM();
-    printStates();
     try
     {
       //open file given as argument
       BufferedReader in = new BufferedReader( new FileReader( args[0] ));
       String line;
       String s;
+      boolean match;
       //print every line which matches pattern
       while ( ( line = in.readLine() ) != null )
       {
+        match = false;
         s = line;
         //try match pattern with line, starting at any point
-        while ( s.length() > 0)
+        while ( s.length() > 0 && !match )
         {
           if ( search(s) )
           {
             System.out.println( line );
+            match = true;
           }
           else
           {
@@ -46,7 +48,7 @@ class REsearch
     }
     catch ( Exception e )
     {
-
+        e.printStackTrace();
     }
   }
 
@@ -57,6 +59,9 @@ class REsearch
    */
   private static boolean search( String line )
   {
+    deque.addLast( new FSMState( scanID, '\u0000', new int[] { -1, -1 } ) );
+    FSMState initial = all_states.getFirst();
+    deque.addFirst( initial );
     FSMState current;
     while ( line.length() > 0 )
     {
@@ -67,6 +72,7 @@ class REsearch
         //...and deque is empty, FAIL.
         if ( deque.isEmpty() )
         {
+          deque.addLast( current );
           return false;
         }
         //...and deque is not empty, move scan char to end of deque; current states = next states
@@ -92,7 +98,7 @@ class REsearch
         {
           return true;
         }
-        deque.addLast( current );
+        deque.addLast( all_states.get( current.getNext()[0] ) );
         line = line.substring(1);
       }
       //if not match and not special case, FAIL.
@@ -107,27 +113,31 @@ class REsearch
 
   private static void buildFSM()
   {
-    deque.addLast( new FSMState( scanID, '\u0000', new int[] { -1, -1 } ) );
+
     Scanner s = new Scanner( System.in );
     //read in state machine
-    while ( s.hasNextLine() )
+    while ( s.hasNextInt() )
     {
       try
       {
         //input symbol for state
         int id = s.nextInt();
         String symbol = s.next();
-        if ( symbol.length() != 1 ) throw new Exception();
+        if ( symbol.length() != 1 )
+        {
+            System.err.println("symbol too long");
+            throw new Exception();
+        }
         int[] nxt = new int[] { s.nextInt(), s.nextInt() };
         all_states.add( id, new FSMState( id, symbol.charAt(0), nxt ) );
       }
       catch ( Exception e )
       {
-        System.err.println( "Invalid Input: " + s.next() );
+        System.err.println( "Invalid Input: " );
+        printStates();
       }
     }
-    FSMState initial = all_states.getFirst();
-    deque.addFirst( initial );
+
   }
 
   private static void printStates()
