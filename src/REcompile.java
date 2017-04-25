@@ -31,7 +31,6 @@ public class REcompile
         int initial;
 
         initial=expression();// <-
-        System.err.println("ENDING ");
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
         set_state(state,empty,0,0);
@@ -65,7 +64,7 @@ public class REcompile
 
         r=term();
         if(index <= regex.length-1) {
-            if (isvocab(regex[index]) || regex[index].equals("[")) expression();
+            if (isvocab(regex[index]) || regex[index].equals("(")) expression();
         }
         return(r);
     }
@@ -102,11 +101,12 @@ public class REcompile
                 bracket = true;
                 index++;
                 temp= index;
-
             }
             else if(index < regex.length && regex[index].equals("]"))
             {
                 bracket = false;
+                System.out.println("BRACKETS ENDED");
+                index++;
             }
             if(bracket & index > temp)
             {
