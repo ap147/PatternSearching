@@ -15,8 +15,8 @@ public class REcompile
 
     private static int count;
     private static int temp;
-    private static int startState = 0;
-
+    private static int startState = 1;
+    private static final char nulll = '\u0000';
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
 
@@ -33,13 +33,15 @@ public class REcompile
         initial=expression();// <-
 
         //if( p[j].equals("1") ) error(); // In C, zero is false, not zero is true
-        set_state(state,empty,0,0);
+        set_state(state,nulll,0,0);
 
+        /*
         if(!customestartState)
         {
             startState = 1;
         }
-        ch[0] = empty;
+        */
+        ch[0] = nulll;
         next1[0]= startState;
         next2[0] =startState;
 
