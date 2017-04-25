@@ -17,6 +17,7 @@ public class REcompile
     private static int temp;
     private static int startState = 1;
     private static int lastStartState = 1;
+    private static int lastlastStartState =1;
     private static final char nulll = '\u0000';
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
@@ -41,7 +42,11 @@ public class REcompile
         next2[0] =startState;
 
 
-        next1[startState] = lastStartState;
+      //  next1[startState] = lastStartState;
+       // System.out.println("LAAAAASSST " + lastlastStartState);
+
+       // next2[lastlastStartState] = next2[lastlastStartState]-1;
+        System.err.println("STATEs" + state);
         dump();
         printArrays();
 
@@ -96,7 +101,10 @@ public class REcompile
             //list of alternative literals (i.e. [ and ])
             if(index < regex.length && regex[index].equals("["))
             {
-
+                if(index+1 < regex.length && regex[index+1].equals("]"))
+                {
+                    error();
+                }
                 bracket = true;
                 index++;
                 temp= index;
@@ -146,6 +154,7 @@ public class REcompile
             if (index < regex.length && regex[index].equals("?") && !bracket)
             {
 
+
                 int prevState = state - 1;
                 //5
                 set_state(state, ch[prevState], next1[prevState] + 2, next2[prevState] + 2);
@@ -179,6 +188,27 @@ public class REcompile
 
                 if(!customestartState)
                 {
+                    startState = state;
+                }
+                customestartState = true;
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+                f = state - 1;
+                index++;
+                r = state;
+                state++;
+                t2 = term();
+                set_state(r, empty, t1, t2);
+                if (next1[f] == next2[f])
+                    next2[f] = state;
+                next1[f] = state;
+
+                // term();
+                /*
+                lastlastStartState = state;
+               if(!customestartState)
+                {
                     count++;
                     lastStartState = startState;
                     startState = state;
@@ -195,12 +225,14 @@ public class REcompile
                 }
                 */
 
+                /*
 
                 f = state - 1;
                 index++;
                 r = state;
                 state++;
                 t2 = term();
+                */
                 /*
                 //set_state(r, empty,lastStartState,lastStartState);
                 if(count == 1) {
@@ -213,15 +245,15 @@ public class REcompile
                 {
                     set_state(r, empty, t1, t2);// t1, t2);
                 }
-                */
 
 
-                    set_state(r, empty, t1, t2);
+                    set_state(r, empty, lastStartState,t2 +1);//t1, t2);
+
 
                 if (next1[f] == next2[f])
                     next2[f] = state;
                 next1[f] = state;
-
+                */
 
             }
         }
@@ -261,14 +293,23 @@ public class REcompile
             }
             else if (regex[index].equals("(")) {
                 index++;
-                r = expression();
                 if (regex[index].equals(")"))
-                    index++;
-                else
+                {
                     error();
+                }
+                else
+                {
+                    r = expression();
+                    System.err.println("MAGIC ?? :" + r);
+                    if (regex[index].equals(")"))
+                        index++;
+                    else
+                        error();
+                }
             } else {
                 error();
             }
+
 
         }
         return (r);
@@ -312,7 +353,7 @@ public class REcompile
         for(int x =0; x< state; x++)
         {
             if(!next1[x].equals(null))
-            {
+           {
                 System.out.println(x +" " +ch[x] + " " + next1[x] + " " + next2[x]);
             }
         }
