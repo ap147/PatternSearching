@@ -14,7 +14,7 @@ public class REcompile
     private static boolean customestartState = false;
 
     private static int count;
-
+    private static int temp;
     private static int startState = 0;
 
     private static final char empty = '\u0012';
@@ -98,14 +98,17 @@ public class REcompile
             //list of alternative literals (i.e. [ and ])
             if(index < regex.length && regex[index].equals("["))
             {
+
                 bracket = true;
                 index++;
+                temp= index;
+
             }
             else if(index < regex.length && regex[index].equals("]"))
             {
                 bracket = false;
             }
-            if(bracket)
+            if(bracket & index > temp)
             {
                 if(!customestartState)
                 {
@@ -212,6 +215,7 @@ public class REcompile
                 index++;
                 r = state;
                 state++;
+                customestartState = false;
             }
             else if (regex[index].equals("(")) {
                 index++;
