@@ -8,35 +8,32 @@ import java.util.Scanner;
 
 class REsearch
 {
-  private static final int scanID = -1;
   private static final char anyChar = '\u0011';
   private static final char branch = '\u0012';
 
-  private static LinkedList<FSMState> all_states = new LinkedList<>();
-  private static MyDeque<FSMState> deque = new MyDeque<>();
+  static LinkedList<FSMState> all_states = new LinkedList<>();
+  static MyDeque<FSMState> deque = new MyDeque<>();
 
   public static void main ( String[] args )
   {
     buildFSM();
+    printStates();
     try
     {
       //open file given as argument
       BufferedReader in = new BufferedReader( new FileReader( args[0] ));
       String line;
       String s;
-      boolean match;
       //print every line which matches pattern
       while ( ( line = in.readLine() ) != null )
       {
-        match = false;
         s = line;
         //try match pattern with line, starting at any point
-        while ( s.length() > 0 && !match )
+        while ( s.length() > 0)
         {
           if ( search(s) )
           {
             System.out.println( line );
-            match = true;
           }
           else
           {
@@ -48,7 +45,7 @@ class REsearch
     }
     catch ( Exception e )
     {
-        e.printStackTrace();
+
     }
   }
 
@@ -57,22 +54,18 @@ class REsearch
    * @param line input string
    * @return true if string starting at line[0] matches pattern
    */
-  private static boolean search( String line )
+  static boolean search( String line )
   {
-    deque.addLast( new FSMState( scanID, '\u0000', new int[] { -1, -1 } ) );
-    FSMState initial = all_states.getFirst();
-    deque.addFirst( initial );
     FSMState current;
     while ( line.length() > 0 )
     {
       current = deque.removeFirst();
       //if scan char...
-      if ( current.getId() == scanID )
+      if ( current.getId() == -1 )
       {
         //...and deque is empty, FAIL.
         if ( deque.isEmpty() )
         {
-          deque.addLast( current );
           return false;
         }
         //...and deque is not empty, move scan char to end of deque; current states = next states
@@ -98,7 +91,7 @@ class REsearch
         {
           return true;
         }
-        deque.addLast( all_states.get( current.getNext()[0] ) );
+        deque.addLast( current );
         line = line.substring(1);
       }
       //if not match and not special case, FAIL.
@@ -111,36 +104,32 @@ class REsearch
     return false;
   }
 
-  private static void buildFSM()
+  static void buildFSM()
   {
-
+    deque.addLast( new FSMState( -1, '\u0000', new int[] { -1, -1 } ) );
     Scanner s = new Scanner( System.in );
     //read in state machine
-    while ( s.hasNextInt() )
+    while ( s.hasNextLine() )
     {
       try
       {
         //input symbol for state
         int id = s.nextInt();
         String symbol = s.next();
-        if ( symbol.length() != 1 )
-        {
-            System.err.println("symbol too long");
-            throw new Exception();
-        }
+        if ( symbol.length() != 1 ) throw new Exception();
         int[] nxt = new int[] { s.nextInt(), s.nextInt() };
         all_states.add( id, new FSMState( id, symbol.charAt(0), nxt ) );
       }
       catch ( Exception e )
       {
-        System.err.println( "Invalid Input: " );
-        printStates();
+        System.err.println( "Invalid Input: " + s.next() );
       }
     }
-
+    FSMState initial = all_states.getFirst();
+    deque.addFirst( initial );
   }
 
-  private static void printStates()
+  static void printStates()
   {
     int[] next;
     for ( FSMState s : all_states )
@@ -155,4 +144,136 @@ class REsearch
     }
   }
 
+}
+
+class FSMState
+{
+  private int id;
+  private char pattern;
+  private int[] next;
+  FSMState( int id, char pattern, int[] nxt )
+  {
+    this.id = id;
+    this.pattern = pattern;
+    next = nxt;
+  }
+  int getId()
+  {
+    return id;
+  }
+
+  char getPattern()
+  {
+    return pattern;
+  }
+
+  int[] getNext()
+  {
+    return next;
+  }
+}
+
+class MyDeque<E>
+{
+  private DequeNode first;
+  private DequeNode last;
+
+  MyDeque()
+  {
+  }
+
+  boolean isEmpty()
+  {
+    return ( first == null && last == null );
+  }
+
+  int length()
+  {
+    if ( isEmpty() )
+    {
+      return 0;
+    }
+    return first.countNodes( 0 );
+  }
+
+  void addFirst(E data)
+  {
+    DequeNode d = new DequeNode( data );
+    if( isEmpty() )
+    {
+      d.next = first;
+      first = d;
+    }
+    else
+    {
+      first = d;
+      last = d;
+    }
+  }
+
+  E removeFirst()
+  {
+    DequeNode d = first;
+    first = first.next;
+    return d.getData();
+  }
+
+  E getFirst()
+  {
+    return first.getData();
+  }
+
+  void addLast(E data)
+  {
+    DequeNode d = new DequeNode(data);
+    if( isEmpty() )
+    {
+      d.prev = last;
+      last = d;
+    }
+    else
+    {
+      first = d;
+      last = d;
+    }
+  }
+
+  E removeLast()
+  {
+    DequeNode d = last;
+    last = last.prev;
+    return d.getData();
+  }
+
+  E getLast()
+  {
+    return last.getData();
+  }
+
+  private class DequeNode
+  {
+    DequeNode prev;
+    DequeNode next;
+    private E data;
+
+    DequeNode(E data)
+    {
+      this.data = data;
+    }
+
+    E getData()
+    {
+      return data;
+    }
+
+    int countNodes( int n )
+    {
+      n++;
+      if ( next != null )
+      {
+        return next.countNodes( n );
+      }
+      return n;
+    }
+  }
 }

@@ -18,7 +18,7 @@ public class REcompile
     private static int startState = 1;
     private static int lastStartState = 1;
     private static int lastlastStartState =1;
-    private static final char nulll = '\u0000';
+    private static final char nulll = '\u0012';
     private static final char empty = '\u0012';
     private static final char consumeNSkip = '\u0011';
 
