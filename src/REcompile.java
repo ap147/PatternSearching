@@ -40,9 +40,9 @@ public class REcompile
         {
             startState = 1;
         }
-        ch[0] = ch[startState];
-        next1[0]= next1[startState];
-        next2[0] =next2[startState];
+        ch[0] = empty;
+        next1[0]= startState;
+        next2[0] =startState;
 
         dump();
         printArrays();
@@ -193,7 +193,7 @@ public class REcompile
                         next2[f] = state;
                     next1[f] = state;
 
-                    term();
+                   // term();
             }
         }
         return(r);
